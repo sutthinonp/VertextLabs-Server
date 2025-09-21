@@ -1,3 +1,7 @@
+import dotenv from 'dotenv'
+
+dotenv.config()
+
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import authRoutes from './routes/auth.js'
