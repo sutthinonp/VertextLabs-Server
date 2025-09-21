@@ -1,14 +1,9 @@
-import type { Context } from 'hono'
+import type { Context, Next } from 'hono'
 import jwt from 'jsonwebtoken'
-import { successResponse, errorResponse } from './response.js'
+import { errorResponse } from './response.js'
+import type { User } from '../models/user.model.js'
 
-interface JwtPayload {
-    id: string
-    username: string
-    role: string
-}
-
-export const generateToken = (user: JwtPayload): string => {
+export const generateToken = (user: User): string => {
     const jwtSecret = process.env.JWT_SECRET || 'default-secret-key'
 
     const token = jwt.sign(
@@ -26,17 +21,25 @@ export const generateToken = (user: JwtPayload): string => {
     return token
 }
 
-export const verifyToken = (token: string): any => {
+interface DecodedJWT {
+    id: string
+    username: string
+    role: string
+    iat?: number
+    exp?: number
+}
+
+export const verifyToken = (token: string): DecodedJWT | null => {
     try {
         const jwtSecret = process.env.JWT_SECRET || 'default-secret-key'
 
-        return jwt.verify(token, jwtSecret)
+        return jwt.verify(token, jwtSecret) as DecodedJWT
     } catch (error) {
         return null
     }
 }
 
-export const authMiddleware = async (c: Context, next: any) => {
+export const authMiddleware = async (c: Context, next: Next) => {
     try {
         const authHeader = c.req.header('Authorization')
 
