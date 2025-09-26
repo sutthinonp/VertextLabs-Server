@@ -1,11 +1,11 @@
 import { Hono } from 'hono'
-import { login, logout } from '../controllers/auth.js'
-import { authMiddleware } from '../middlewares/auth.js'
+import { login, sendOTP, verifyOTP } from '../controllers/auth.js'
 
 const router = new Hono()
 
 router.post('/login', login)
+router.post('/send-otp', sendOTP)
+router.post('/verify-otp', verifyOTP)
 
-router.post('/logout', authMiddleware, logout)
 
 export default router

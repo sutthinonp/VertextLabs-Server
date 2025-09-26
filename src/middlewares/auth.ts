@@ -1,65 +1,37 @@
-import type { Context, Next } from 'hono'
 import jwt from 'jsonwebtoken'
-import { errorResponse } from './response.js'
 import type { User } from '../models/user.model.js'
 
 export const generateToken = (user: User): string => {
+
     const jwtSecret = process.env.JWT_SECRET || 'default-secret-key'
 
-    const token = jwt.sign(
-        {
-            id: user.id,
-            username: user.username,
-            role: user.role
-        },
-        jwtSecret,
-        {
-            expiresIn: '24h'
-        }
-    )
-
+    const token = jwt.sign({
+        id: user.id,
+        citizenId: user.citizenId,
+        role: user.role
+    }, jwtSecret, {
+        expiresIn: '24h'
+    });
     return token
 }
 
-interface DecodedJWT {
-    id: string
-    username: string
-    role: string
-    iat?: number
-    exp?: number
-}
+export const generateOTP = () => {
 
-export const verifyToken = (token: string): DecodedJWT | null => {
-    try {
-        const jwtSecret = process.env.JWT_SECRET || 'default-secret-key'
+    const refCodeText = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    const otp = Math.floor(100000 + Math.random() * 900000).toString().slice(0, 6)
 
-        return jwt.verify(token, jwtSecret) as DecodedJWT
-    } catch (error) {
-        return null
+    let refCode = ''
+    for (let i = 0; i < 6; i++) {
+        const index = Math.floor(Math.random() * refCodeText.length)
+        refCode += refCodeText[index]
     }
-}
 
-export const authMiddleware = async (c: Context, next: Next) => {
-    try {
-        const authHeader = c.req.header('Authorization')
+    const minutes = 5
+    const expiresAt = new Date(Date.now() + minutes * 60 * 1000)
 
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return errorResponse(c, null, 401, 'Authorization token required')
-        }
-
-        const token = authHeader.substring(7)
-
-        const decoded = verifyToken(token)
-
-        if (!decoded) {
-            return errorResponse(c, null, 401, 'Invalid or expired token')
-        }
-
-        c.set('user', decoded)
-
-        await next()
-
-    } catch (error) {
-        return errorResponse(c, null, 401, 'Authentication failed')
+    return {
+        otp,
+        refCode,
+        expiresAt
     }
 }
