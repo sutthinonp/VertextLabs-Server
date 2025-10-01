@@ -50,6 +50,13 @@ export const login = async (c: Context) => {
             isPassed: isPassed,
             daysDiff: daysDiff,
             monthsDiff: monthsDiff,
+            picture: user.picture,
+            name: user.name,
+            nickName: user.nickName,
+            currentAddress: user.currentAddress,
+            permanentAddress: user.permanentAddress,
+            incomeType: user.incomeType,
+            mobile: user.mobile
         }
 
         return successResponse(c, {
